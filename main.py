@@ -1,8 +1,11 @@
+import math
+
 import pygame
 import random
 
-# Scale factor
+# Scales factor
 scale = 28
+ballsBoyScale = 20
 
 # Number of balls
 ballsAmount = 25
@@ -17,7 +20,6 @@ class tennisCourt:
         self.netStartPosition = [0, self.courtArea_y_m/2]
         self.netEndPosition = [self.courtArea_x_m, self.courtArea_y_m/2]
         self.netThickness = 3
-
 
 # Tennis balls' basket Class
 class ballsBasket:
@@ -41,7 +43,18 @@ class tennisBall:
 class ballsBoy:
     def __init__(self):
         self.boyPosition = []
-        self.boyColor = pygame.Color(232, 212, 176)
+        self.ballsBoyPNG = ""
+        self.ballsDistances = []
+
+    def calculateDistanceToBall(self, ballX, ballY):
+        dist = math.hypot(self.boyPosition[0] - ballX, self.boyPosition[1] - ballY)
+        return dist
+
+    def calculateDistanceToAllBalls(self, inputBallsList):
+        for ball in inputBallsList:
+            ballDistance = self.calculateDistanceToBall(ball.ballPosition[0], ball.ballPosition[1])
+            self.ballsDistances.append(ballDistance)
+            print("Ball distance is: " + str(ballDistance))
 
 # Init game
 pygame.init()
@@ -71,8 +84,24 @@ for i in range(ballsAmount):
     ballsList[-1].ballPosition = [random.randrange(0, window_x), random.randrange(0, window_y)]
     pygame.draw.circle(courtWindow, Ball.ballColor, ballsList[-1].ballPosition, Ball.ballSize_x_m*scale*2)
 
+# Displaying character
+Boy.ballsBoyPNG = pygame.image.load('player.png')
+
+# Calculate the resized png dimensions and round them up.
+pngSizeX = math.ceil(Boy.ballsBoyPNG.get_width()/ballsBoyScale)
+pngSizeY = math.ceil(Boy.ballsBoyPNG.get_height()/ballsBoyScale)
+Boy.ballsBoyPNG = pygame.transform.scale(Boy.ballsBoyPNG, (pngSizeX, pngSizeY))
+maxBoyXAxis = window_x - pngSizeX
+maxBoyYAxis = window_y - pngSizeY
+Boy.boyPosition = [random.randrange(0, maxBoyXAxis), random.randrange(0, maxBoyYAxis)]
+courtWindow.blit(Boy.ballsBoyPNG, Boy.boyPosition)
+
+# Calculate distance to balls
+Boy.calculateDistanceToAllBalls(ballsList)
+
 while True:
     pygame.display.update()
+
 
 
 
